@@ -16,6 +16,8 @@ $ cd xbar-plugin-github
 $ make
 ```
 
+A symbolic link is created in `~/Library/Application Support/xbar/plugins/github.5m.js`.
+
 ## Configuration
 
 - `GITHUB_TOKEN`: Your GitHub Personal Access Token.
