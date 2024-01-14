@@ -98,6 +98,8 @@ const readNotification = async (id) => {
   });
 };
 
+const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
+
 (async () => {
   const [executable, script, ...args] = process.argv;
 
@@ -184,7 +186,7 @@ const readNotification = async (id) => {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
       console.log(
-        `${pullRequest.title} #${pullRequest.number} | href=${pullRequest.url}`
+        `${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
       );
     }
   }
@@ -204,7 +206,7 @@ const readNotification = async (id) => {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
       console.log(
-        `${pullRequest.title} #${pullRequest.number} | href=${pullRequest.url}`
+        `${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
       );
     }
   }
@@ -222,7 +224,7 @@ const readNotification = async (id) => {
     console.log(`${repo} | size=12`);
     for (const notification of notifications) {
       console.log(
-        `(${notification.reason}) ${notification.subject.title} | href=${notification.html_url}`
+        `(${notification.reason}) ${escapePipe(notification.subject.title)} | href=${notification.html_url}`
       );
       console.log(
         `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
