@@ -1,0 +1,6 @@
+{
+  "name": "xbar-plugin-github",
+  "main": "main.js",
+  "author": "koki-develop <kou.pg.0131@gmail.com>",
+  "license": "MIT"
+}
