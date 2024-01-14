@@ -118,8 +118,8 @@ const readNotification = async (id) => {
   }
 
   if (!config.token) {
-    console.log(`:warning: | image=${config.image}`)
-    console.log("---")
+    console.log(`:warning: | image=${config.image}`);
+    console.log("---");
     console.log("GITHUB_TOKEN not set. Please set it in the plugin settings.");
     return;
   }
@@ -173,7 +173,9 @@ const readNotification = async (id) => {
 
   // Review Requested
   console.log(
-    `:eyes: Review Requested (${pullRequestsReviewRequestedCount}) | color=red`
+    `:eyes: Review Requested (${pullRequestsReviewRequestedCount}) | color=red href=https://github.com/search?q=${encodeURIComponent(
+      "is:open review-requested:@me -reviewed-by:@me -author:app/renovate -author:app/dependabot"
+    )}&type=pullrequests`
   );
   for (const [repo, pullRequests] of Object.entries(
     pullRequestsReviewRequestedByRepo
@@ -188,7 +190,9 @@ const readNotification = async (id) => {
 
   // My Pull Requests
   console.log(
-    `:seedling: My Pull Requests (${pullRequestsMineCount}) | color=green`
+    `:seedling: My Pull Requests (${pullRequestsMineCount}) | color=green href=https://github.com/search?q=${encodeURIComponent(
+      "author:@me is:open"
+    )}&type=pullrequests`
   );
   for (const [repo, pullRequests] of Object.entries(pullRequestsMineByRepo)) {
     console.log(`${repo} | size=12`);
@@ -199,8 +203,10 @@ const readNotification = async (id) => {
 
   console.log("---");
 
-  // Notification
-  console.log(`:bell: Notification (${notificationsCount}) | color=blue`);
+  // Notifications
+  console.log(
+    `:bell: Notifications (${notificationsCount}) | color=blue href=https://github.com/notifications`
+  );
   for (const [repo, notifications] of Object.entries(notificationsByRepo)) {
     console.log(`${repo} | size=12`);
     for (const notification of notifications) {
