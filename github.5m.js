@@ -223,7 +223,7 @@ const readNotification = async (id) => {
     console.log(`${repo} | size=12`);
     for (const notification of notifications) {
       console.log(
-        `${notification.subject.title} | href=${notification.html_url}`
+        `(${notification.reason}) ${notification.subject.title} | href=${notification.html_url}`
       );
       console.log(
         `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
