@@ -185,6 +185,9 @@ const readNotification = async (id) => {
       console.log(`${pullRequest.title} | href=${pullRequest.url}`);
     }
   }
+  if (pullRequestsReviewRequestedCount === "0") {
+    console.log("No pull requests");
+  }
 
   console.log("---");
 
@@ -199,6 +202,9 @@ const readNotification = async (id) => {
     for (const pullRequest of pullRequests) {
       console.log(`${pullRequest.title} | href=${pullRequest.url}`);
     }
+  }
+  if (pullRequestsMineCount === "0") {
+    console.log("No pull requests");
   }
 
   console.log("---");
@@ -217,5 +223,8 @@ const readNotification = async (id) => {
         `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
       );
     }
+  }
+  if (notificationsCount === "0") {
+    console.log("No notifications");
   }
 })();
