@@ -1,6 +1,8 @@
 # xbar Plugin for GitHub
 
+<p align="center">
 <img src="./screenshot.png" width="400p" />
+</p>
 
 ## Prerequisites
 
