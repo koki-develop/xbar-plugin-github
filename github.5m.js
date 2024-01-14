@@ -34,7 +34,7 @@ query {
   data = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: {
-      Authorization: `bearer ${config.token}`,
+      Authorization: `Bearer ${config.token}`,
     },
     body: JSON.stringify({ query }),
   }).then((resp) => resp.json());
@@ -67,7 +67,7 @@ query {
   data = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: {
-      Authorization: `bearer ${config.token}`,
+      Authorization: `Bearer ${config.token}`,
     },
     body: JSON.stringify({ query }),
   }).then((resp) => resp.json());
@@ -80,7 +80,7 @@ const fetchNotifications = async () => {
     "https://api.github.com/notifications?per_page=21",
     {
       headers: {
-        Authorization: `bearer ${config.token}`,
+        Authorization: `Bearer ${config.token}`,
       },
     }
   ).then((resp) => resp.json());
@@ -95,7 +95,7 @@ const fetchNotifications = async () => {
         }
         const resource = await fetch(resourceUrl, {
           headers: {
-            Authorization: `bearer ${config.token}`,
+            Authorization: `Bearer ${config.token}`,
           },
         }).then((resp) => resp.json());
         return {
@@ -112,7 +112,7 @@ const readNotification = async (id) => {
   await fetch(`https://api.github.com/notifications/threads/${id}`, {
     method: "PATCH",
     headers: {
-      Authorization: `bearer ${config.token}`,
+      Authorization: `Bearer ${config.token}`,
     },
   });
 };
