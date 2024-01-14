@@ -29,6 +29,7 @@ query {
         ... on PullRequest {
           title
           url
+          number
           repository {
             name
             owner {
@@ -182,7 +183,9 @@ const readNotification = async (id) => {
   )) {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
-      console.log(`${pullRequest.title} | href=${pullRequest.url}`);
+      console.log(
+        `${pullRequest.title} #${pullRequest.number} | href=${pullRequest.url}`
+      );
     }
   }
   if (pullRequestsReviewRequestedCount === "0") {
@@ -200,7 +203,9 @@ const readNotification = async (id) => {
   for (const [repo, pullRequests] of Object.entries(pullRequestsMineByRepo)) {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
-      console.log(`${pullRequest.title} | href=${pullRequest.url}`);
+      console.log(
+        `${pullRequest.title} #${pullRequest.number} | href=${pullRequest.url}`
+      );
     }
   }
   if (pullRequestsMineCount === "0") {
