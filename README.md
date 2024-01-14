@@ -26,6 +26,7 @@ A symbolic link is created in `~/Library/Application Support/xbar/plugins/github
 
 ```console
 $ wget https://raw.githubusercontent.com/koki-develop/xbar-plugin-github/main/github.5m.js -P ~/Library/Application\ Support/xbar/plugins/
+$ chmod +x ~/Library/Application\ Support/xbar/plugins/github.5m.js
 ```
 
 ## Configuration
