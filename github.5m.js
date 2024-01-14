@@ -10,42 +10,20 @@ const config = {
 };
 
 const fetchPullRequestsReviewRequested = async () => {
-  const query = `
-query {
-  search(query: "is:pr is:open review-requested:@me -reviewed-by:@me -author:app/renovate -author:app/dependabot", type: ISSUE, first: 100) {
-    edges {
-      node {
-        ... on PullRequest {
-          title
-          url
-          repository {
-            name
-            owner {
-              login
-            }
-          }
-        }
-      }
-    }
-  }
-}
-`;
-
-  data = await fetch("https://api.github.com/graphql", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.token}`,
-    },
-    body: JSON.stringify({ query }),
-  }).then((resp) => resp.json());
-
-  return data.data.search.edges.map((edge) => edge.node);
+  const query =
+    "is:pr is:open review-requested:@me -reviewed-by:@me -author:app/renovate -author:app/dependabot";
+  return await searchIssues(query);
 };
 
 const fetchPullRequestsMine = async () => {
+  const query = "is:pr is:open author:@me";
+  return await searchIssues(query);
+};
+
+const searchIssues = async (q) => {
   const query = `
 query {
-  search(query: "is:pr is:open author:@me", type: ISSUE, first: 100) {
+  search(query: "${q}", type: ISSUE, first: 100) {
     edges {
       node {
         ... on PullRequest {
@@ -76,8 +54,10 @@ query {
 };
 
 const fetchNotifications = async () => {
+  const max = 20;
+
   const notifications = await fetch(
-    "https://api.github.com/notifications?per_page=21",
+    `https://api.github.com/notifications?per_page=${max + 1}`,
     {
       headers: {
         Authorization: `Bearer ${config.token}`,
@@ -87,7 +67,7 @@ const fetchNotifications = async () => {
 
   return [
     await Promise.all(
-      notifications.slice(0, 20).map(async (notification) => {
+      notifications.slice(0, max).map(async (notification) => {
         const resourceUrl =
           notification.subject.latest_comment_url ?? notification.subject.url;
         if (!resourceUrl) {
@@ -104,7 +84,7 @@ const fetchNotifications = async () => {
         };
       })
     ),
-    notifications.length > 20,
+    notifications.length > max,
   ];
 };
 
