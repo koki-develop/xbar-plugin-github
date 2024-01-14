@@ -118,7 +118,9 @@ const readNotification = async (id) => {
   }
 
   if (!config.token) {
-    console.log("GITHUB_TOKEN not set");
+    console.log(`:warning: | image=${config.image}`)
+    console.log("---")
+    console.log("GITHUB_TOKEN not set. Please set it in the plugin settings.");
     return;
   }
 
