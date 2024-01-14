@@ -1,5 +1,7 @@
 # xbar Plugin for GitHub
 
+<img src="./screenshot.png" width="400p" />
+
 ## Prerequisites
 
 `node` is installed by homebrew.
