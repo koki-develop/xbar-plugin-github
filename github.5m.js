@@ -205,7 +205,7 @@ const readNotification = async (id) => {
 
   // Notifications
   console.log(
-    `:bell: Notifications (${notificationsCount}) | color=blue href=https://github.com/notifications`
+    `:bell: Notifications (${notificationsCount}) | color=yellow href=https://github.com/notifications`
   );
   for (const [repo, notifications] of Object.entries(notificationsByRepo)) {
     console.log(`${repo} | size=12`);
