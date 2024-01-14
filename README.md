@@ -11,6 +11,8 @@ $ brew install node
 ## Installation
 
 ```console
+$ git clone git@github.com:koki-develop/xbar-plugin-github
+$ cd xbar-plugin-github
 $ make
 ```
 
