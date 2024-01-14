@@ -36,6 +36,17 @@ query {
               login
             }
           }
+          commits(last: 1) {
+            nodes {
+              commit {
+                checkSuites(last: 1) {
+                  nodes {
+                    conclusion
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -99,6 +110,23 @@ const readNotification = async (id) => {
 };
 
 const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
+
+const conclustionToEmoji = (conclusion) => {
+  switch (conclusion) {
+    case "SUCCESS":
+      return ":white_check_mark: ";
+    case "FAILURE":
+    case "TIMED_OUT":
+    case "STARTUP_FAILURE":
+      return ":x: ";
+    case "CANCELLED":
+      return ":no_entry: ";
+    case "ACTION_REQUIRED":
+      return ":clock12: ";
+    default:
+      return "";
+  }
+}
 
 (async () => {
   const [executable, script, ...args] = process.argv;
@@ -185,8 +213,9 @@ const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
   )) {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
+      const conclusion = pullRequest.commits.nodes[0].commit.checkSuites.nodes[0].conclusion;
       console.log(
-        `${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
+        `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
       );
     }
   }
@@ -205,8 +234,9 @@ const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
   for (const [repo, pullRequests] of Object.entries(pullRequestsMineByRepo)) {
     console.log(`${repo} | size=12`);
     for (const pullRequest of pullRequests) {
+      const conclusion = pullRequest.commits.nodes[0].commit.checkSuites.nodes[0].conclusion;
       console.log(
-        `${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
+        `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
       );
     }
   }
