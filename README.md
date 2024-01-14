@@ -1,5 +1,13 @@
 # xbar Plugin for GitHub
 
+## Prerequisites
+
+`node` is installed by homebrew.
+
+```console
+$ brew install node
+```
+
 ## Installation
 
 ```console
