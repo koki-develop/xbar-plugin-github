@@ -5,6 +5,7 @@
 // <xbar.var>boolean(SHOW_REVIEW_REQUESTED=true): Show Pull Requests that are requested to review.</xbar.var>
 // <xbar.var>boolean(SHOW_MY_PULL_REQUESTS=true): Show your Pull Requests.</xbar.var>
 // <xbar.var>boolean(SHOW_NOTIFICATIONS=true): Show your notifications.</xbar.var>
+// <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
 // <xbar.var>boolean(DEBUG=false): Enable debug mode.</xbar.var>
 
@@ -15,6 +16,7 @@ const config = {
   showReviewRequested: process.env["SHOW_REVIEW_REQUESTED"] === "true",
   showMyPullRequests: process.env["SHOW_MY_PULL_REQUESTS"] === "true",
   showNotifications: process.env["SHOW_NOTIFICATIONS"] === "true",
+  showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
   includeBotPullRequests: process.env["INCLUDE_BOT_PULL_REQUESTS"] === "true",
   debug: process.env["DEBUG"] === "true",
 };
@@ -234,9 +236,13 @@ const pullRequestsToLines = (pullRequests) => {
     const conclusion =
       pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
     lines.push(
-      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`,
-      `${escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`)} | size=10`
+      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
     );
+    if (config.showBranches) {
+      lines.push(
+        `${escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`)} | size=10`
+      );
+    }
   }
   return lines;
 };
