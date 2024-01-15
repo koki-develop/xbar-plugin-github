@@ -111,6 +111,19 @@ const readNotification = async (id) => {
   });
 };
 
+const readAllNotifications = async () => {
+  const resp = await fetch(`https://api.github.com/notifications`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+    },
+    body: JSON.stringify({
+      last_read_at: new Date().toISOString(),
+      read: true,
+    }),
+  });
+};
+
 const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
 
 const printPullRequests = (pullRequests) => {
@@ -156,6 +169,9 @@ const conclustionToEmoji = (conclusion) => {
       case "read-notification":
         const id = args[2];
         await readNotification(id);
+        break;
+      case "read-all-notifications":
+        await readAllNotifications();
         break;
       default:
         throw new Error(`Unknown command: ${command}`);
@@ -257,6 +273,11 @@ const conclustionToEmoji = (conclusion) => {
   console.log(
     `:bell: Notifications (${notificationsCount}) | color=yellow href=https://github.com/notifications`
   );
+  if (notificationsCount > 0) {
+    console.log(
+      `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`
+    );
+  }
   for (const [repo, notifications] of Object.entries(notificationsByRepo)) {
     console.log(`${repo} | size=12 color=yellow`);
     for (const notification of notifications) {
