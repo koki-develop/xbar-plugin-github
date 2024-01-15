@@ -8,7 +8,6 @@
 // <xbar.var>boolean(SHOW_PULL_REQUEST_STATUS=true): Show Pull Request's status.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
-// <xbar.var>boolean(DEBUG=false): Enable debug mode.</xbar.var>
 
 const config = {
   image:
@@ -20,7 +19,6 @@ const config = {
   showPullRequestStatus: process.env["SHOW_PULL_REQUEST_STATUS"] === "true",
   showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
   includeBotPullRequests: process.env["INCLUDE_BOT_PULL_REQUESTS"] === "true",
-  debug: process.env["DEBUG"] === "true",
 };
 
 const botNames = ["renovate", "dependabot"];
