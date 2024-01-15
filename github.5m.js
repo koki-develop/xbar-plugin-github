@@ -65,33 +65,37 @@ const botNames = ["renovate", "dependabot"];
  */
 
 /**
- * @returns {Promise<[string, GitHubPullRequest[]]>}
+ * @returns {string}
  */
-const fetchPullRequestsReviewRequested = async () => {
+const buildQueryPullRequestsReviewRequested = () => {
   const filters = ["is:pr", "is:open", "review-requested:@me"];
-  if (!config.includeBotPullRequests) {
+  if (!config.includeBotPullRequests)
     filters.push(...botNames.map((botName) => `-author:app/${botName}`));
-  }
-
-  const url = `https://github.com/search?q=${encodeURIComponent(
-    filters.join(" ")
-  )}&type=pullrequests`;
-
-  if (!config.showReviewRequested) return [url, []];
-  return [url, await searchPullRequests(filters.join(" "))];
+  return filters.join(" ");
 };
 
 /**
- * @returns {Promise<[string, GitHubPullRequest[]]>}
+ * @returns {Promise<GitHubPullRequest[]>}
+ */
+const fetchPullRequestsReviewRequested = async () => {
+  return await searchPullRequests(buildQueryPullRequestsReviewRequested());
+};
+
+/**
+ * @returns {string}
+ */
+const buildQueryPullRequestsMine = () => {
+  const filters = ["is:pr", "is:open", "author:@me"];
+  if (!config.includeBotPullRequests)
+    filters.push(...botNames.map((botName) => `-author:app/${botName}`));
+  return filters.join(" ");
+};
+
+/**
+ * @returns {Promise<GitHubPullRequest[]>}
  */
 const fetchPullRequestsMine = async () => {
-  const query = "is:pr is:open author:@me";
-  const url = `https://github.com/search?q=${encodeURIComponent(
-    query
-  )}&type=pullrequests`;
-
-  if (!config.showMyPullRequests) return [url, []];
-  return [url, await searchPullRequests(query)];
+  return await searchPullRequests(buildQueryPullRequestsMine());
 };
 
 /**
@@ -146,13 +150,10 @@ query {
 };
 
 /**
- * @returns {Promise<[string, GitHubNotification[], boolean]>}
+ * @param {number} max
+ * @returns {Promise<GitHubNotification[]>}
  */
-const fetchNotifications = async () => {
-  const url = "https://github.com/notifications";
-  if (!config.showNotifications) return [url, [], false];
-
-  const max = 20;
+const fetchNotifications = async (max) => {
   const notifications = await fetch(
     `https://api.github.com/notifications?per_page=${max + 1}`,
     {
@@ -162,28 +163,24 @@ const fetchNotifications = async () => {
     }
   ).then((resp) => resp.json());
 
-  return [
-    url,
-    await Promise.all(
-      notifications.slice(0, max).map(async (notification) => {
-        const resourceUrl =
-          notification.subject.latest_comment_url ?? notification.subject.url;
-        if (!resourceUrl) {
-          return notification;
-        }
-        const resource = await fetch(resourceUrl, {
-          headers: {
-            Authorization: `Bearer ${config.token}`,
-          },
-        }).then((resp) => resp.json());
-        return {
-          ...notification,
-          html_url: resource.html_url,
-        };
-      })
-    ),
-    notifications.length > max,
-  ];
+  return await Promise.all(
+    notifications.slice(0, max).map(async (notification) => {
+      const resourceUrl =
+        notification.subject.latest_comment_url ?? notification.subject.url;
+      if (!resourceUrl) {
+        return notification;
+      }
+      const resource = await fetch(resourceUrl, {
+        headers: {
+          Authorization: `Bearer ${config.token}`,
+        },
+      }).then((resp) => resp.json());
+      return {
+        ...notification,
+        html_url: resource.html_url,
+      };
+    })
+  );
 };
 
 const readNotification = async (id) => {
@@ -209,6 +206,19 @@ const readAllNotifications = async () => {
 };
 
 /**
+ * @param {any} resource
+ * @returns {Record<string, GitHubPullRequest[]>}
+ */
+const groupResourcesByRepo = (resource) => {
+  return resource.reduce((acc, pr) => {
+    const key = `${pr.repository.owner.login}/${pr.repository.name}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(pr);
+    return acc;
+  }, {});
+};
+
+/**
  * @param {string} str
  * @returns string
  */
@@ -216,24 +226,24 @@ const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
 
 /**
  * @param {GitHubPullRequest[]} pullRequests
+ * @returns {string[]}
  */
-const printPullRequests = (pullRequests) => {
+const pullRequestsToLines = (pullRequests) => {
+  const lines = [];
   for (const pullRequest of pullRequests) {
     const conclusion =
       pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
-    console.log(
-      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
-    );
-    console.log(
-      escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`),
-      "| size=10"
+    lines.push(
+      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`,
+      `${escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`)} | size=10`
     );
   }
+  return lines;
 };
 
 /**
  * @param {string} conclusion
- * @returns string
+ * @returns {string}
  */
 const conclustionToEmoji = (conclusion) => {
   switch (conclusion) {
@@ -282,117 +292,138 @@ const conclustionToEmoji = (conclusion) => {
     return;
   }
 
-  const [
-    [reviewRequstedUrl, pullRequestsReviewRequested],
-    [mineUrl, pullRequestsMine],
-    [notificationsUrl, notifications, moreNotifications],
-  ] = await Promise.all([
-    fetchPullRequestsReviewRequested(),
-    fetchPullRequestsMine(),
-    fetchNotifications(),
-  ]);
+  /** @type {Promise<any>} */
+  const promises = [];
+  /** @type {Record<string, number>} */
+  const countsMap = {};
+  /** @type {string[]} */
+  const reviewRequestedLines = [];
+  /** @type {string[]} */
+  const mineLines = [];
+  /** @type {string[]} */
+  const notificationsLines = [];
 
-  const pullRequestsReviewRequestedCount = pullRequestsReviewRequested.length;
-  const pullRequestsReviewRequestedByRepo = pullRequestsReviewRequested.reduce(
-    (acc, pr) => {
-      const key = `${pr.repository.owner.login}/${pr.repository.name}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(pr);
-      return acc;
-    },
-    {}
-  );
-
-  const pullRequestsMineCount = pullRequestsMine.length;
-  const pullRequestsMineByRepo = pullRequestsMine.reduce((acc, pr) => {
-    const key = `${pr.repository.owner.login}/${pr.repository.name}`;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(pr);
-    return acc;
-  }, {});
-
-  const notificationsCount = `${notifications.length}${moreNotifications ? "+" : ""}`;
-  const notificationsByRepo = notifications.reduce((acc, notification) => {
-    const key = `${notification.repository.owner.login}/${notification.repository.name}`;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(notification);
-    return acc;
-  }, {});
-
-  // Menu bar
-  const counts = [];
-  if (config.showReviewRequested) counts.push(pullRequestsReviewRequestedCount);
-  if (config.showMyPullRequests) counts.push(pullRequestsMineCount);
-  if (config.showNotifications) counts.push(notificationsCount);
-
-  console.log(
-    `(${counts.map((i) => i.toString()).join("/")}) | templateImage=${config.image}`
-  );
-  console.log("---");
-  console.log("Last updated at", new Date().toLocaleString(), "| size=12");
-  console.log("---");
-
+  /*
+   * Review Requested
+   */
   if (config.showReviewRequested) {
-    // Review Requested
-    console.log(
-      `:eyes: Review Requested (${pullRequestsReviewRequestedCount}) | color=red href=${reviewRequstedUrl}`
-    );
-    for (const [repo, pullRequests] of Object.entries(
-      pullRequestsReviewRequestedByRepo
-    )) {
-      console.log(`${repo} | size=12 color=red`);
-      printPullRequests(pullRequests);
-    }
-    if (pullRequestsReviewRequestedCount === "0") {
-      console.log("No pull requests");
-    }
-    console.log("---");
+    const promise = fetchPullRequestsReviewRequested().then((pullRequests) => {
+      countsMap.reviewRequested = pullRequests.length;
+      if (pullRequests.length === 0) {
+        reviewRequestedLines.push("No pull requests");
+        reviewRequestedLines.push("---");
+        return;
+      }
+
+      const byRepo = groupResourcesByRepo(pullRequests);
+      reviewRequestedLines.push(
+        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://github.com/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
+      );
+      for (const [repo, pullRequests] of Object.entries(byRepo)) {
+        reviewRequestedLines.push(
+          `${repo} | size=12 color=red`,
+          ...pullRequestsToLines(pullRequests)
+        );
+      }
+      reviewRequestedLines.push("---");
+    });
+    promises.push(promise);
   }
 
+  /*
+   * My Pull Requests
+   */
   if (config.showMyPullRequests) {
-    // My Pull Requests
-    console.log(
-      `:seedling: My Pull Requests (${pullRequestsMineCount}) | color=green href=${mineUrl}`
-    );
-    for (const [repo, pullRequests] of Object.entries(pullRequestsMineByRepo)) {
-      console.log(`${repo} | size=12 color=green`);
-      printPullRequests(pullRequests);
-    }
-    if (pullRequestsMineCount === "0") {
-      console.log("No pull requests");
-    }
-    console.log("---");
+    const promise = fetchPullRequestsMine().then((pullRequests) => {
+      countsMap.mine = pullRequests.length;
+      if (pullRequests.length === 0) {
+        mineLines.push("No pull requests");
+        mineLines.push("---");
+        return;
+      }
+
+      const byRepo = groupResourcesByRepo(pullRequests);
+      mineLines.push(
+        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://github.com/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
+      );
+      for (const [repo, pullRequests] of Object.entries(byRepo)) {
+        mineLines.push(
+          `${repo} | size=12 color=green`,
+          ...pullRequestsToLines(pullRequests)
+        );
+      }
+      mineLines.push("---");
+    });
+    promises.push(promise);
   }
 
+  /*
+   * Notifications
+   */
   if (config.showNotifications) {
-    // Notifications
-    console.log(
-      `:bell: Notifications (${notificationsCount}) | color=yellow href=${notificationsUrl}`
-    );
-    if (notificationsCount > 0) {
-      console.log(
+    const max = 20;
+    const promise = fetchNotifications(max).then((notifications) => {
+      countsMap.notifications = notifications.length;
+      if (notifications.length === 0) {
+        notificationsLines.push("No notifications");
+        notificationsLines.push("---");
+        return;
+      }
+
+      const byRepo = groupResourcesByRepo(notifications);
+      notificationsLines.push(
+        `:bell: Notifications (${notifications.length}) | color=yellow href=https://github.com/notifications`
+      );
+      notificationsLines.push(
         `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`
       );
-    }
-    for (const [repo, notifications] of Object.entries(notificationsByRepo)) {
-      console.log(`${repo} | size=12 color=yellow`);
-      for (const notification of notifications) {
-        console.log(
-          `(${notification.reason}) ${escapePipe(notification.subject.title)} | href=${notification.html_url}`
-        );
-        console.log(
-          `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
-        );
+      for (const [repo, notifications] of Object.entries(byRepo)) {
+        notificationsLines.push(`${repo} | size=12 color=yellow`);
+
+        for (const notification of notifications) {
+          notificationsLines.push(
+            `(${notification.reason}) ${escapePipe(notification.subject.title)} | href=${notification.html_url}`,
+            `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
+          );
+        }
       }
-    }
-    if (notificationsCount === "0") {
-      console.log("No notifications");
-    }
+      notificationsLines.push("---");
+    });
+    promises.push(promise);
   }
+
+  // Wait for all promises to complete
+  await Promise.all(promises);
+
+  /*
+   * Menu bar
+   */
+
+  /** @type {number[]} */
+  const counts = [];
+  if (config.showReviewRequested) counts.push(countsMap.reviewRequested);
+  if (config.showMyPullRequests) counts.push(countsMap.mine);
+  if (config.showNotifications) counts.push(countsMap.notifications);
+
+  /** @type {string[]} */
+  const menubarLines = [];
+  menubarLines.push(
+    `(${counts.map((i) => i.toString()).join("/")}) | templateImage=${config.image}`,
+    "---",
+    `Last updated at ${new Date().toLocaleString()} | size=12`,
+    "---"
+  );
+
+  /*
+   * Output
+   */
+
+  /** @type {string[]} */
+  const lines = [];
+  lines.push(...menubarLines);
+  if (config.showReviewRequested) lines.push(...reviewRequestedLines);
+  if (config.showMyPullRequests) lines.push(...mineLines);
+  if (config.showNotifications) lines.push(...notificationsLines);
+
+  console.log(lines.join("\n"));
 })();
