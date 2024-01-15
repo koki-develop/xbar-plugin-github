@@ -7,6 +7,7 @@
 // <xbar.var>boolean(SHOW_NOTIFICATIONS=true): Show your notifications.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_STATUS=true): Show Pull Request's status.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
+// <xbar.var>boolean(SHOW_NOTIFICATION_REASON=true): Show notification's reason.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
 
 const config = {
@@ -18,6 +19,7 @@ const config = {
   showNotifications: process.env["SHOW_NOTIFICATIONS"] === "true",
   showPullRequestStatus: process.env["SHOW_PULL_REQUEST_STATUS"] === "true",
   showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
+  showNotificationReason: process.env["SHOW_NOTIFICATION_REASON"] === "true",
   includeBotPullRequests: process.env["INCLUDE_BOT_PULL_REQUESTS"] === "true",
 };
 
@@ -395,8 +397,11 @@ const conclustionToEmoji = (conclusion) => {
         notificationsLines.push(`${repo} | size=12 color=yellow`);
 
         for (const notification of notifications) {
+          const prefix = config.showNotificationReason
+            ? `(${notification.reason}) `
+            : "";
           notificationsLines.push(
-            `(${notification.reason}) ${escapePipe(notification.subject.title)} | href=${notification.html_url}`,
+            `${prefix}${escapePipe(notification.subject.title)} | href=${notification.html_url}`,
             `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
           );
         }
