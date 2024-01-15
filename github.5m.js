@@ -9,18 +9,71 @@ const config = {
   token: process.env.GITHUB_TOKEN,
 };
 
+/*
+ * type definitions
+ */
+
+/**
+ * @typedef {Object} GitHubUser
+ * @property {string} login
+ */
+
+/**
+ * @typedef {Object} GitHubRepository
+ * @property {string} name
+ * @property {GitHubUser} owner
+ * @property {string} url
+ */
+
+/**
+ * @typedef {Object} GitHubPullRequest
+ * @property {string} title
+ * @property {string} url
+ * @property {number} number
+ * @property {string} headRefName
+ * @property {string} baseRefName
+ * @property {GitHubRepository} repository
+ */
+
+/**
+ * @typedef {Object} GitHubNotification
+ * @property {string} id
+ * @property {string} reason
+ * @property {string} title
+ * @property {string} html_url
+ * @property {GitHubRepository} repository
+ * @property {GitHubNotificationSubject} subject
+ */
+
+/**
+ * @typedef {Object} GitHubNotificationSubject
+ * @property {string} title
+ * @property {string} url
+ * @property {string | null} latest_comment_url
+ */
+
+/**
+ * @returns {Promise<GitHubPullRequest[]>}
+ */
 const fetchPullRequestsReviewRequested = async () => {
   const query =
     "is:pr is:open review-requested:@me -reviewed-by:@me -author:app/renovate -author:app/dependabot";
-  return await searchIssues(query);
+  return await searchPullRequests(query);
 };
 
+/**
+ * @returns {Promise<GitHubPullRequest[]>}
+ */
 const fetchPullRequestsMine = async () => {
   const query = "is:pr is:open author:@me";
-  return await searchIssues(query);
+  return await searchPullRequests(query);
 };
 
-const searchIssues = async (q) => {
+/**
+ * @param {string} q
+ * @returns {Promise<GitHubPullRequest[]>}
+ */
+const searchPullRequests = async (q) => {
   const query = `
 query {
   search(query: "${q}", type: ISSUE, first: 100) {
@@ -67,6 +120,9 @@ query {
   return data.data.search.edges.map((edge) => edge.node);
 };
 
+/**
+ * @returns {Promise<[GitHubNotification[], boolean]>}
+ */
 const fetchNotifications = async () => {
   const max = 20;
 
@@ -124,8 +180,15 @@ const readAllNotifications = async () => {
   });
 };
 
+/**
+ * @param {string} str
+ * @returns string
+ */
 const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
 
+/**
+ * @param {GitHubPullRequest[]} pullRequests
+ */
 const printPullRequests = (pullRequests) => {
   for (const pullRequest of pullRequests) {
     const conclusion =
@@ -140,6 +203,10 @@ const printPullRequests = (pullRequests) => {
   }
 };
 
+/**
+ * @param {string} conclusion
+ * @returns string
+ */
 const conclustionToEmoji = (conclusion) => {
   switch (conclusion) {
     case "SUCCESS":
