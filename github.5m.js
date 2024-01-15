@@ -153,7 +153,7 @@ query {
 
 /**
  * @param {number} max
- * @returns {Promise<GitHubNotification[]>}
+ * @returns {Promise<[GitHubNotification[], boolean]>}
  */
 const fetchNotifications = async (max) => {
   const notifications = await fetch(
@@ -165,24 +165,27 @@ const fetchNotifications = async (max) => {
     }
   ).then((resp) => resp.json());
 
-  return await Promise.all(
-    notifications.slice(0, max).map(async (notification) => {
-      const resourceUrl =
-        notification.subject.latest_comment_url ?? notification.subject.url;
-      if (!resourceUrl) {
-        return notification;
-      }
-      const resource = await fetch(resourceUrl, {
-        headers: {
-          Authorization: `Bearer ${config.token}`,
-        },
-      }).then((resp) => resp.json());
-      return {
-        ...notification,
-        html_url: resource.html_url,
-      };
-    })
-  );
+  return [
+    await Promise.all(
+      notifications.slice(0, max).map(async (notification) => {
+        const resourceUrl =
+          notification.subject.latest_comment_url ?? notification.subject.url;
+        if (!resourceUrl) {
+          return notification;
+        }
+        const resource = await fetch(resourceUrl, {
+          headers: {
+            Authorization: `Bearer ${config.token}`,
+          },
+        }).then((resp) => resp.json());
+        return {
+          ...notification,
+          html_url: resource.html_url,
+        };
+      })
+    ),
+    notifications.length > max,
+  ];
 };
 
 const readNotification = async (id) => {
@@ -304,7 +307,7 @@ const conclustionToEmoji = (conclusion) => {
 
   /** @type {Promise<any>} */
   const promises = [];
-  /** @type {Record<string, number>} */
+  /** @type {Record<string, string | number>} */
   const countsMap = {};
   /** @type {string[]} */
   const reviewRequestedLines = [];
@@ -372,8 +375,9 @@ const conclustionToEmoji = (conclusion) => {
    */
   if (config.showNotifications) {
     const max = 20;
-    const promise = fetchNotifications(max).then((notifications) => {
-      countsMap.notifications = notifications.length;
+    const promise = fetchNotifications(max).then(([notifications, hasMore]) => {
+      const count = hasMore ? `${max}+` : notifications.length.toString();
+      countsMap.notifications = count;
       if (notifications.length === 0) {
         notificationsLines.push("No notifications");
         notificationsLines.push("---");
@@ -382,7 +386,7 @@ const conclustionToEmoji = (conclusion) => {
 
       const byRepo = groupResourcesByRepo(notifications);
       notificationsLines.push(
-        `:bell: Notifications (${notifications.length}) | color=yellow href=https://github.com/notifications`
+        `:bell: Notifications (${count}) | color=yellow href=https://github.com/notifications`
       );
       notificationsLines.push(
         `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`
@@ -397,7 +401,6 @@ const conclustionToEmoji = (conclusion) => {
           );
         }
       }
-      notificationsLines.push("---");
     });
     promises.push(promise);
   }
