@@ -5,6 +5,7 @@
 // <xbar.var>boolean(SHOW_REVIEW_REQUESTED=true): Show Pull Requests that are requested to review.</xbar.var>
 // <xbar.var>boolean(SHOW_MY_PULL_REQUESTS=true): Show your Pull Requests.</xbar.var>
 // <xbar.var>boolean(SHOW_NOTIFICATIONS=true): Show your notifications.</xbar.var>
+// <xbar.var>boolean(SHOW_PULL_REQUEST_STATUS=true): Show Pull Request's status.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
 // <xbar.var>boolean(DEBUG=false): Enable debug mode.</xbar.var>
@@ -16,6 +17,7 @@ const config = {
   showReviewRequested: process.env["SHOW_REVIEW_REQUESTED"] === "true",
   showMyPullRequests: process.env["SHOW_MY_PULL_REQUESTS"] === "true",
   showNotifications: process.env["SHOW_NOTIFICATIONS"] === "true",
+  showPullRequestStatus: process.env["SHOW_PULL_REQUEST_STATUS"] === "true",
   showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
   includeBotPullRequests: process.env["INCLUDE_BOT_PULL_REQUESTS"] === "true",
   debug: process.env["DEBUG"] === "true",
@@ -233,10 +235,14 @@ const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
 const pullRequestsToLines = (pullRequests) => {
   const lines = [];
   for (const pullRequest of pullRequests) {
-    const conclusion =
-      pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
+    const prefix = (() => {
+      if (!config.showPullRequestStatus) return "";
+      const conclusion =
+        pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
+      return conclustionToEmoji(conclusion);
+    })();
     lines.push(
-      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
+      `${prefix}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
     );
     if (config.showBranches) {
       lines.push(
