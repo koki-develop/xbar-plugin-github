@@ -217,6 +217,7 @@ const conclustionToEmoji = (conclusion) => {
     `(${pullRequestsReviewRequestedCount}/${pullRequestsMineCount}/${notificationsCount}) | templateImage=${config.image}`
   );
   console.log("---");
+  console.log("Last updated at", new Date().toLocaleString(), "| size=12");
 
   // Review Requested
   console.log(
