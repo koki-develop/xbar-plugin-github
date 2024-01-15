@@ -30,6 +30,8 @@ query {
           title
           url
           number
+          headRefName
+          baseRefName
           repository {
             name
             owner {
@@ -111,6 +113,20 @@ const readNotification = async (id) => {
 
 const escapePipe = (str) => str.replaceAll(/\|/g, "ǀ");
 
+const printPullRequests = (pullRequests) => {
+  for (const pullRequest of pullRequests) {
+    const conclusion =
+      pullRequest.commits.nodes[0].commit.checkSuites.nodes[0].conclusion;
+    console.log(
+      `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
+    );
+    console.log(
+      escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`),
+      "| size=10"
+    );
+  }
+};
+
 const conclustionToEmoji = (conclusion) => {
   switch (conclusion) {
     case "SUCCESS":
@@ -126,7 +142,7 @@ const conclustionToEmoji = (conclusion) => {
     default:
       return "";
   }
-}
+};
 
 (async () => {
   const [executable, script, ...args] = process.argv;
@@ -211,13 +227,8 @@ const conclustionToEmoji = (conclusion) => {
   for (const [repo, pullRequests] of Object.entries(
     pullRequestsReviewRequestedByRepo
   )) {
-    console.log(`${repo} | size=12`);
-    for (const pullRequest of pullRequests) {
-      const conclusion = pullRequest.commits.nodes[0].commit.checkSuites.nodes[0].conclusion;
-      console.log(
-        `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
-      );
-    }
+    console.log(`${repo} | size=12 color=red`);
+    printPullRequests(pullRequests);
   }
   if (pullRequestsReviewRequestedCount === "0") {
     console.log("No pull requests");
@@ -232,13 +243,8 @@ const conclustionToEmoji = (conclusion) => {
     )}&type=pullrequests`
   );
   for (const [repo, pullRequests] of Object.entries(pullRequestsMineByRepo)) {
-    console.log(`${repo} | size=12`);
-    for (const pullRequest of pullRequests) {
-      const conclusion = pullRequest.commits.nodes[0].commit.checkSuites.nodes[0].conclusion;
-      console.log(
-        `${conclustionToEmoji(conclusion)}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
-      );
-    }
+    console.log(`${repo} | size=12 color=green`);
+    printPullRequests(pullRequests);
   }
   if (pullRequestsMineCount === "0") {
     console.log("No pull requests");
@@ -251,7 +257,7 @@ const conclustionToEmoji = (conclusion) => {
     `:bell: Notifications (${notificationsCount}) | color=yellow href=https://github.com/notifications`
   );
   for (const [repo, notifications] of Object.entries(notificationsByRepo)) {
-    console.log(`${repo} | size=12`);
+    console.log(`${repo} | size=12 color=yellow`);
     for (const notification of notifications) {
       console.log(
         `(${notification.reason}) ${escapePipe(notification.subject.title)} | href=${notification.html_url}`
