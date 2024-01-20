@@ -1,6 +1,12 @@
 #!/usr/bin/env -S PATH="${PATH}:/opt/homebrew/bin" node
 
-// Variables
+// meta
+// <xbar.title>GitHub</xbar.title>
+// <xbar.author>koki</xbar.author>
+// <xbar.author.github>koki-develop</xbar.author.github>
+// <xbar.dependencies>node</xbar.dependencies>
+
+// variables
 // <xbar.var>string(GITHUB_TOKEN=""): Your GitHub Personal Access Token.</xbar.var>
 // <xbar.var>boolean(SHOW_REVIEW_REQUESTED=true): Show Pull Requests that are requested to review.</xbar.var>
 // <xbar.var>boolean(SHOW_MY_PULL_REQUESTS=true): Show your Pull Requests.</xbar.var>
