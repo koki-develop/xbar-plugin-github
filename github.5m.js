@@ -154,7 +154,13 @@ query {
       Authorization: `Bearer ${config.token}`,
     },
     body: JSON.stringify({ query }),
-  }).then((resp) => resp.json());
+  }).then(async (resp) => {
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(JSON.stringify(data));
+    }
+    return data;
+  });
 
   return data.data.search.edges.map((edge) => edge.node);
 };
