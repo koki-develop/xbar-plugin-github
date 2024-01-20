@@ -171,7 +171,13 @@ const fetchNotifications = async (max) => {
         Authorization: `Bearer ${config.token}`,
       },
     }
-  ).then((resp) => resp.json());
+  ).then(async (resp) => {
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(JSON.stringify(data));
+    }
+    return data;
+  });
 
   return [
     await Promise.all(
