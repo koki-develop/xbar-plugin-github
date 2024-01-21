@@ -1,6 +1,6 @@
 {
   "name": "xbar-plugin-github",
-  "main": "main.js",
+  "main": "github.5m.js",
   "author": "koki-develop <kou.pg.0131@gmail.com>",
   "license": "MIT",
   "devDependencies": {
