@@ -7,7 +7,6 @@
 // <xbar.dependencies>node</xbar.dependencies>
 
 // variables
-// <xbar.var>string(GITHUB_HOST=""): Your GitHub Enterprise Host. Leave blank for GitHub.com.</xbar.var>
 // <xbar.var>string(GITHUB_TOKEN=""): Your GitHub Personal Access Token.</xbar.var>
 // <xbar.var>boolean(SHOW_REVIEW_REQUESTED=true): Show Pull Requests that are requested to review.</xbar.var>
 // <xbar.var>boolean(SHOW_MY_PULL_REQUESTS=true): Show your Pull Requests.</xbar.var>
@@ -16,6 +15,7 @@
 // <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
 // <xbar.var>boolean(SHOW_NOTIFICATION_REASON=true): Show notification's reason.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
+// <xbar.var>string(GITHUB_HOST=""): Your GitHub Enterprise Host. Leave blank for GitHub.com.</xbar.var>
 
 const config = {
   image:
