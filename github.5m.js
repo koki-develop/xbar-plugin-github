@@ -16,6 +16,7 @@
 // <xbar.var>boolean(SHOW_NOTIFICATION_REASON=true): Show notification's reason.</xbar.var>
 // <xbar.var>boolean(INCLUDE_BOT_PULL_REQUESTS=false): Include Pull Requests created by bots.</xbar.var>
 // <xbar.var>string(GITHUB_HOST=""): Your GitHub Enterprise Host. Leave blank for GitHub.com.</xbar.var>
+// <xbar.var>boolean(OMIT_CI_ACTIVITY=false): Include CI activity in the notifications. </xbar.var>
 
 const config = {
   image:
@@ -29,6 +30,7 @@ const config = {
   showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
   showNotificationReason: process.env["SHOW_NOTIFICATION_REASON"] === "true",
   includeBotPullRequests: process.env["INCLUDE_BOT_PULL_REQUESTS"] === "true",
+  omitCiActivity: process.env["OMIT_CI_ACTIVITY"] === "true",
 };
 
 const botNames = ["renovate", "dependabot"];
@@ -400,6 +402,11 @@ const conclustionToEmoji = (conclusion) => {
   if (config.showNotifications) {
     const max = 20;
     const promise = fetchNotifications(max).then(([notifications, hasMore]) => {
+      if (config.omitCiActivity) {
+        notifications = notifications.filter(
+          (notification) => notification.reason !== "ci_activity"
+        );
+      }
       const count = hasMore ? `${max}+` : notifications.length.toString();
       countsMap.notifications = count;
       if (notifications.length === 0) {
