@@ -1,4 +1,4 @@
-#!/usr/bin/env -S PATH="${PATH}:/opt/homebrew/bin" node
+#!/usr/bin/env -S PATH="${PATH}:/opt/homebrew/bin:/usr/local/bin" node
 
 // meta
 // <xbar.title>GitHub</xbar.title>
