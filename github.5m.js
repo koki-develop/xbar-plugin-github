@@ -345,6 +345,10 @@ const conclustionToEmoji = (conclusion) => {
    */
   if (config.showReviewRequested) {
     const promise = fetchPullRequestsReviewRequested().then((pullRequests) => {
+      reviewRequestedLines.push(
+        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
+      );
+
       countsMap.reviewRequested = pullRequests.length;
       if (pullRequests.length === 0) {
         reviewRequestedLines.push("No pull requests");
@@ -353,9 +357,6 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       const byRepo = groupResourcesByRepo(pullRequests);
-      reviewRequestedLines.push(
-        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
-      );
       for (const [repo, pullRequests] of Object.entries(byRepo)) {
         reviewRequestedLines.push(
           `${repo} | size=12 color=red`,
@@ -372,6 +373,10 @@ const conclustionToEmoji = (conclusion) => {
    */
   if (config.showMyPullRequests) {
     const promise = fetchPullRequestsMine().then((pullRequests) => {
+      mineLines.push(
+        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
+      );
+
       countsMap.mine = pullRequests.length;
       if (pullRequests.length === 0) {
         mineLines.push("No pull requests");
@@ -380,9 +385,6 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       const byRepo = groupResourcesByRepo(pullRequests);
-      mineLines.push(
-        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
-      );
       for (const [repo, pullRequests] of Object.entries(byRepo)) {
         mineLines.push(
           `${repo} | size=12 color=green`,
@@ -401,6 +403,11 @@ const conclustionToEmoji = (conclusion) => {
     const max = 20;
     const promise = fetchNotifications(max).then(([notifications, hasMore]) => {
       const count = hasMore ? `${max}+` : notifications.length.toString();
+
+      notificationsLines.push(
+        `:bell: Notifications (${count}) | color=yellow href=https://${restApiEndpoint}/notifications`
+      );
+
       countsMap.notifications = count;
       if (notifications.length === 0) {
         notificationsLines.push("No notifications");
@@ -408,13 +415,11 @@ const conclustionToEmoji = (conclusion) => {
         return;
       }
 
-      const byRepo = groupResourcesByRepo(notifications);
-      notificationsLines.push(
-        `:bell: Notifications (${count}) | color=yellow href=https://${restApiEndpoint}/notifications`
-      );
       notificationsLines.push(
         `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`
       );
+
+      const byRepo = groupResourcesByRepo(notifications);
       for (const [repo, notifications] of Object.entries(byRepo)) {
         notificationsLines.push(`${repo} | size=12 color=yellow`);
 
