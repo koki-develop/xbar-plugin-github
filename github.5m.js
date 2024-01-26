@@ -346,7 +346,7 @@ const conclustionToEmoji = (conclusion) => {
   if (config.showReviewRequested) {
     const promise = fetchPullRequestsReviewRequested().then((pullRequests) => {
       reviewRequestedLines.push(
-        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
+        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
       );
 
       countsMap.reviewRequested = pullRequests.length;
@@ -374,7 +374,7 @@ const conclustionToEmoji = (conclusion) => {
   if (config.showMyPullRequests) {
     const promise = fetchPullRequestsMine().then((pullRequests) => {
       mineLines.push(
-        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${restApiEndpoint}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
+        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
       );
 
       countsMap.mine = pullRequests.length;
@@ -405,7 +405,7 @@ const conclustionToEmoji = (conclusion) => {
       const count = hasMore ? `${max}+` : notifications.length.toString();
 
       notificationsLines.push(
-        `:bell: Notifications (${count}) | color=yellow href=https://${restApiEndpoint}/notifications`
+        `:bell: Notifications (${count}) | color=yellow href=https://${config.githubHost}/notifications`
       );
 
       countsMap.notifications = count;
