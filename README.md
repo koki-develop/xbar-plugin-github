@@ -42,7 +42,6 @@ $ chmod +x ~/Library/Application\ Support/xbar/plugins/github.5m.js
 - `SHOW_NOTIFICATION_REASON` : Show notification's reason.
 - `INCLUDE_BOT_PULL_REQUESTS` : Include Pull Requests created by bots.
 
-
 ## LICENSE
 
 [MIT](./LICENSE)

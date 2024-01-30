@@ -32,8 +32,14 @@ const config = {
 };
 
 const botNames = ["renovate", "dependabot"];
-const restApiEndpoint = config.githubHost === "github.com" ? "api.github.com" : `${config.githubHost}/api/v3`;
-const graphqlApiEndpoint = config.githubHost === "github.com" ? "api.github.com" : `${config.githubHost}/api`;
+const restApiEndpoint =
+  config.githubHost === "github.com"
+    ? "api.github.com"
+    : `${config.githubHost}/api/v3`;
+const graphqlApiEndpoint =
+  config.githubHost === "github.com"
+    ? "api.github.com"
+    : `${config.githubHost}/api`;
 
 /*
  * type definitions
@@ -180,7 +186,7 @@ const fetchNotifications = async (max) => {
       headers: {
         Authorization: `Bearer ${config.token}`,
       },
-    }
+    },
   ).then(async (resp) => {
     const data = await resp.json();
     if (!resp.ok) {
@@ -206,7 +212,7 @@ const fetchNotifications = async (max) => {
           ...notification,
           html_url: resource.html_url,
         };
-      })
+      }),
     ),
     notifications.length > max,
   ];
@@ -267,11 +273,11 @@ const pullRequestsToLines = (pullRequests) => {
       return conclustionToEmoji(conclusion);
     })();
     lines.push(
-      `${prefix}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`
+      `${prefix}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`,
     );
     if (config.showBranches) {
       lines.push(
-        `${escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`)} | size=10`
+        `${escapePipe(`${pullRequest.baseRefName} ← ${pullRequest.headRefName}`)} | size=10`,
       );
     }
   }
@@ -346,7 +352,7 @@ const conclustionToEmoji = (conclusion) => {
   if (config.showReviewRequested) {
     const promise = fetchPullRequestsReviewRequested().then((pullRequests) => {
       reviewRequestedLines.push(
-        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`
+        `:eyes: Review Requested (${pullRequests.length}) | color=red href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsReviewRequested())}`,
       );
 
       countsMap.reviewRequested = pullRequests.length;
@@ -360,7 +366,7 @@ const conclustionToEmoji = (conclusion) => {
       for (const [repo, pullRequests] of Object.entries(byRepo)) {
         reviewRequestedLines.push(
           `${repo} | size=12 color=red`,
-          ...pullRequestsToLines(pullRequests)
+          ...pullRequestsToLines(pullRequests),
         );
       }
       reviewRequestedLines.push("---");
@@ -374,7 +380,7 @@ const conclustionToEmoji = (conclusion) => {
   if (config.showMyPullRequests) {
     const promise = fetchPullRequestsMine().then((pullRequests) => {
       mineLines.push(
-        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`
+        `:seedling: My Pull Requests (${pullRequests.length}) | color=green href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryPullRequestsMine())}`,
       );
 
       countsMap.mine = pullRequests.length;
@@ -388,7 +394,7 @@ const conclustionToEmoji = (conclusion) => {
       for (const [repo, pullRequests] of Object.entries(byRepo)) {
         mineLines.push(
           `${repo} | size=12 color=green`,
-          ...pullRequestsToLines(pullRequests)
+          ...pullRequestsToLines(pullRequests),
         );
       }
       mineLines.push("---");
@@ -405,7 +411,7 @@ const conclustionToEmoji = (conclusion) => {
       const count = hasMore ? `${max}+` : notifications.length.toString();
 
       notificationsLines.push(
-        `:bell: Notifications (${count}) | color=yellow href=https://${config.githubHost}/notifications`
+        `:bell: Notifications (${count}) | color=yellow href=https://${config.githubHost}/notifications`,
       );
 
       countsMap.notifications = count;
@@ -416,7 +422,7 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       notificationsLines.push(
-        `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`
+        `--Mark all as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-all-notifications refresh=true`,
       );
 
       const byRepo = groupResourcesByRepo(notifications);
@@ -429,7 +435,7 @@ const conclustionToEmoji = (conclusion) => {
             : "";
           notificationsLines.push(
             `${prefix}${escapePipe(notification.subject.title)} | href=${notification.html_url}`,
-            `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`
+            `--Mark as read | shell="${executable}" param1="${script}" param2=${config.token} param3=read-notification param4=${notification.id} refresh=true`,
           );
         }
       }
@@ -456,7 +462,7 @@ const conclustionToEmoji = (conclusion) => {
     `(${counts.map((i) => i.toString()).join("/")}) | templateImage=${config.image}`,
     "---",
     `Last updated at ${new Date().toLocaleString()} | size=12`,
-    "---"
+    "---",
   );
 
   /*
