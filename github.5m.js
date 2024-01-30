@@ -235,11 +235,11 @@ const readAllNotifications = async () => {
 };
 
 /**
- * @param {any} resource
+ * @param {any} resources
  * @returns {Record<string, GitHubPullRequest[]>}
  */
-const groupResourcesByRepo = (resource) => {
-  return resource.reduce((acc, pr) => {
+const groupResourcesByRepo = (resources) => {
+  return resources.reduce((acc, pr) => {
     const key = `${pr.repository.owner.login}/${pr.repository.name}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(pr);
