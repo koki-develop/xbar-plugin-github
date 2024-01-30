@@ -222,7 +222,7 @@ const readNotification = async (id) => {
 };
 
 const readAllNotifications = async () => {
-  const resp = await fetch(`https://${restApiEndpoint}/notifications`, {
+  await fetch(`https://${restApiEndpoint}/notifications`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${config.token}`,
