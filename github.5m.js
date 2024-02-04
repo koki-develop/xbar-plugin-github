@@ -10,7 +10,7 @@
 // <xbar.var>string(GITHUB_TOKEN=""): Your GitHub Personal Access Token.</xbar.var>
 // <xbar.var>boolean(SHOW_REVIEW_REQUESTED=true): Show Pull Requests that are requested to review.</xbar.var>
 // <xbar.var>boolean(SHOW_MY_PULL_REQUESTS=true): Show your Pull Requests.</xbar.var>
-// <xbar.var>boolean(SHOW_MY_ISSUES=false): Show your Issues.</xbar.var>
+// <xbar.var>boolean(SHOW_ISSUES_ASSIGNED=false): Show your Issues.</xbar.var>
 // <xbar.var>boolean(SHOW_NOTIFICATIONS=true): Show your notifications.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_STATUS=true): Show Pull Request's status.</xbar.var>
 // <xbar.var>boolean(SHOW_PULL_REQUEST_BRANCHES=true): Show Pull Request's base/head branches.</xbar.var>
@@ -25,7 +25,7 @@ const config = {
   token: process.env["GITHUB_TOKEN"],
   showReviewRequested: process.env["SHOW_REVIEW_REQUESTED"] === "true",
   showMyPullRequests: process.env["SHOW_MY_PULL_REQUESTS"] === "true",
-  showMyIssues: process.env["SHOW_MY_ISSUES"] === "true",
+  showIssuesAssigned: process.env["SHOW_ISSUES_ASSIGNED"] === "true",
   showNotifications: process.env["SHOW_NOTIFICATIONS"] === "true",
   showPullRequestStatus: process.env["SHOW_PULL_REQUEST_STATUS"] === "true",
   showBranches: process.env["SHOW_PULL_REQUEST_BRANCHES"] === "true",
@@ -490,7 +490,7 @@ const conclustionToEmoji = (conclusion) => {
   /* 
   * Issues
   */
-  if (config.showMyIssues) {
+  if (config.showIssuesAssigned) {
     const promise = fetchIssuesAssigned().then((issues) => {
       issuesAssignedLines.push(
         `:pushpin: Issues Assigned (${issues.length}) | color=pink href=https://${config.githubHost}/search?q=${encodeURIComponent(buildQueryIssuesAssigned())}`,
@@ -567,7 +567,7 @@ const conclustionToEmoji = (conclusion) => {
   const counts = [];
   if (config.showReviewRequested) counts.push(countsMap.reviewRequested);
   if (config.showMyPullRequests) counts.push(countsMap.mine);
-  if (config.showMyIssues) counts.push(countsMap.issuesAssigned);
+  if (config.showIssuesAssigned) counts.push(countsMap.issuesAssigned);
   if (config.showNotifications) counts.push(countsMap.notifications);
 
   /** @type {string[]} */
@@ -588,7 +588,7 @@ const conclustionToEmoji = (conclusion) => {
   lines.push(...menubarLines);
   if (config.showReviewRequested) lines.push(...reviewRequestedLines);
   if (config.showMyPullRequests) lines.push(...mineLines);
-  if (config.showMyIssues) lines.push(...issuesAssignedLines);
+  if (config.showIssuesAssigned) lines.push(...issuesAssignedLines);
   if (config.showNotifications) lines.push(...notificationsLines);
 
   console.log(lines.join("\n"));
