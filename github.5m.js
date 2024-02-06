@@ -66,6 +66,7 @@ const graphqlApiEndpoint =
  * @property {number} number
  * @property {string} headRefName
  * @property {string} baseRefName
+ * @property {boolean} isDraft
  * @property {GitHubRepository} repository
  */
 
@@ -144,6 +145,7 @@ query {
           number
           headRefName
           baseRefName
+          isDraft
           repository {
             name
             owner {
@@ -336,10 +338,20 @@ const pullRequestsToLines = (pullRequests) => {
   const lines = [];
   for (const pullRequest of pullRequests) {
     const prefix = (() => {
-      if (!config.showPullRequestStatus) return "";
-      const conclusion =
-        pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
-      return conclustionToEmoji(conclusion);
+      /** @type {string[]} */
+      const cols = [];
+
+      if (config.showPullRequestStatus) {
+        const conclusion =
+          pullRequest.commits.nodes[0].commit.checkSuites.nodes[0]?.conclusion;
+        const emoji = conclustionToEmoji(conclusion);
+        if (emoji) cols.push(emoji);
+      }
+
+      if (pullRequest.isDraft) cols.push("(Draft)");
+
+      if (cols.length === 0) return "";
+      return `${cols.join(" ")} `;
     })();
     lines.push(
       `${prefix}${escapePipe(pullRequest.title)} #${pullRequest.number} | href=${pullRequest.url}`,
@@ -369,22 +381,22 @@ const issuesToLines = (issues) => {
 
 /**
  * @param {string} conclusion
- * @returns {string}
+ * @returns {string | null}
  */
 const conclustionToEmoji = (conclusion) => {
   switch (conclusion) {
     case "SUCCESS":
-      return ":white_check_mark: ";
+      return ":white_check_mark:";
     case "FAILURE":
     case "TIMED_OUT":
     case "STARTUP_FAILURE":
-      return ":x: ";
+      return ":x:";
     case "CANCELLED":
-      return ":no_entry: ";
+      return ":no_entry:";
     case "ACTION_REQUIRED":
-      return ":clock12: ";
+      return ":clock12:";
     default:
-      return "";
+      return null;
   }
 };
 
