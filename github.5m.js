@@ -323,7 +323,7 @@ const groupResourcesByRepo = (resources) => {
     return acc;
   }, {});
 
-  return Object.entries(repositories).sort(([a], [b]) => a > b ? 1 : -1);
+  return Object.entries(repositories).sort(([a], [b]) => (a > b ? 1 : -1));
 };
 
 /**
@@ -379,7 +379,7 @@ const issuesToLines = (issues) => {
     );
   }
   return lines;
-}
+};
 
 /**
  * @param {string} conclusion
