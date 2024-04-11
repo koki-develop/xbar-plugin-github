@@ -316,12 +316,14 @@ const readAllNotifications = async () => {
  * @returns {Record<string, GitHubPullRequest[]>}
  */
 const groupResourcesByRepo = (resources) => {
-  return resources.reduce((acc, pr) => {
+  const repositories = resources.reduce((acc, pr) => {
     const key = `${pr.repository.owner.login}/${pr.repository.name}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(pr);
     return acc;
   }, {});
+
+  return Object.entries(repositories).sort(([a], [b]) => a > b ? 1 : -1);
 };
 
 /**
@@ -460,7 +462,7 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       const byRepo = groupResourcesByRepo(pullRequests);
-      for (const [repo, pullRequests] of Object.entries(byRepo)) {
+      for (const [repo, pullRequests] of byRepo) {
         reviewRequestedLines.push(
           `${repo} | size=12 color=red`,
           ...pullRequestsToLines(pullRequests),
@@ -488,7 +490,7 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       const byRepo = groupResourcesByRepo(pullRequests);
-      for (const [repo, pullRequests] of Object.entries(byRepo)) {
+      for (const [repo, pullRequests] of byRepo) {
         mineLines.push(
           `${repo} | size=12 color=green`,
           ...pullRequestsToLines(pullRequests),
@@ -516,7 +518,7 @@ const conclustionToEmoji = (conclusion) => {
       }
 
       const byRepo = groupResourcesByRepo(issues);
-      for (const [repo, issues] of Object.entries(byRepo)) {
+      for (const [repo, issues] of byRepo) {
         issuesAssignedLines.push(
           `${repo} | size=12 color=red`,
           ...issuesToLines(issues),
@@ -551,7 +553,7 @@ const conclustionToEmoji = (conclusion) => {
       );
 
       const byRepo = groupResourcesByRepo(notifications);
-      for (const [repo, notifications] of Object.entries(byRepo)) {
+      for (const [repo, notifications] of byRepo) {
         notificationsLines.push(`${repo} | size=12 color=yellow`);
 
         for (const notification of notifications) {
