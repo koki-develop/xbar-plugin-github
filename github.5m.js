@@ -501,9 +501,9 @@ const conclustionToEmoji = (conclusion) => {
     promises.push(promise);
   }
 
-  /* 
-  * Issues
-  */
+  /*
+   * Issues
+   */
   if (config.showIssuesAssigned) {
     const promise = fetchIssuesAssigned().then((issues) => {
       issuesAssignedLines.push(
