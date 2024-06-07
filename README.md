@@ -41,6 +41,7 @@ $ chmod +x ~/Library/Application\ Support/xbar/plugins/github.5m.js
 - `SHOW_PULL_REQUEST_BRANCHES` : Show Pull Request's base/head branches.
 - `SHOW_NOTIFICATION_REASON` : Show notification's reason.
 - `INCLUDE_BOT_PULL_REQUESTS` : Include Pull Requests created by bots.
+- `GITHUB_HOST` : Your GitHub Enterprise Host. Leave blank for GitHub.com.
 
 ## LICENSE
 
