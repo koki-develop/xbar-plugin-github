@@ -4,6 +4,6 @@
   "author": "koki-develop <kou.pg.0131@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "^3.2.2"
+    "prettier": "3.6.2"
   }
 }
